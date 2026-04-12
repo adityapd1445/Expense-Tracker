@@ -62,8 +62,10 @@ export default function HomePage() {
         console.log("GET /api/expenses status", response.status);
 
         if (!response.ok) {
-          const body = await response.text();
-          throw new Error(body || `Unable to fetch expenses (${response.status}).`);
+          const errorResponse = await response.json().catch(() => null);
+          throw new Error(
+            errorResponse?.error || `Unable to fetch expenses (${response.status}).`
+          );
         }
 
         const data = await response.json();

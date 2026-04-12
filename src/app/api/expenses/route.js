@@ -10,6 +10,11 @@ const formatDate = (dateString) => {
   return parsed.toISOString().slice(0, 10);
 };
 
+const createErrorResponse = (message, fallback) => {
+  const error = process.env.NODE_ENV === "development" ? message : fallback;
+  return NextResponse.json({ error }, { status: 500 });
+};
+
 export async function GET() {
   try {
     console.log("GET /api/expenses called");
@@ -33,9 +38,9 @@ export async function GET() {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("GET /api/expenses error:", error);
-    return NextResponse.json(
-      { error: "Unable to fetch expenses from the database." },
-      { status: 500 }
+    return createErrorResponse(
+      error.message,
+      "Unable to fetch expenses from the database."
     );
   }
 }
@@ -87,9 +92,9 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("POST /api/expenses error:", error);
-    return NextResponse.json(
-      { error: "Unable to add expense to the database." },
-      { status: 500 }
+    return createErrorResponse(
+      error.message,
+      "Unable to add expense to the database."
     );
   }
 }
@@ -121,9 +126,9 @@ export async function DELETE(request) {
     return NextResponse.json({ success: true, id }, { status: 200 });
   } catch (error) {
     console.error("DELETE /api/expenses error:", error);
-    return NextResponse.json(
-      { error: "Unable to delete expense from the database." },
-      { status: 500 }
+    return createErrorResponse(
+      error.message,
+      "Unable to delete expense from the database."
     );
   }
 }
