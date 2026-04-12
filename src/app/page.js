@@ -59,14 +59,23 @@ export default function HomePage() {
 
       try {
         const response = await fetch("/api/expenses");
+        console.log("GET /api/expenses status", response.status);
+
         if (!response.ok) {
-          throw new Error("Unable to fetch expenses.");
+          const body = await response.text();
+          throw new Error(body || `Unable to fetch expenses (${response.status}).`);
         }
 
         const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid response format from server.");
+        }
+
         setExpenses(data);
       } catch (err) {
+        console.error("loadExpenses error:", err);
         setError(err.message || "Failed to load expenses.");
+        setExpenses([]);
       } finally {
         setLoading(false);
       }
@@ -81,6 +90,16 @@ export default function HomePage() {
     setCategory("Food");
     setDate(defaultDate);
   };
+
+  async function parseJsonResponse(response) {
+    const text = await response.text();
+    if (!text) return {};
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { error: text };
+    }
+  }
 
   async function handleAddExpense(event) {
     event.preventDefault();
@@ -106,7 +125,7 @@ export default function HomePage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
       if (!response.ok) {
         throw new Error(data?.error || "Unable to add expense.");
       }
@@ -134,7 +153,7 @@ export default function HomePage() {
         method: "DELETE",
       });
 
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
       if (!response.ok) {
         throw new Error(data?.error || "Unable to delete expense.");
       }

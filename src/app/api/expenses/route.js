@@ -12,6 +12,7 @@ const formatDate = (dateString) => {
 
 export async function GET() {
   try {
+    console.log("GET /api/expenses called");
     const client = await connectToDatabase();
     const db = client.db("expenseDB");
     const expenses = await db
@@ -31,6 +32,7 @@ export async function GET() {
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
+    console.error("GET /api/expenses error:", error);
     return NextResponse.json(
       { error: "Unable to fetch expenses from the database." },
       { status: 500 }
@@ -84,6 +86,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
+    console.error("POST /api/expenses error:", error);
     return NextResponse.json(
       { error: "Unable to add expense to the database." },
       { status: 500 }
@@ -117,6 +120,7 @@ export async function DELETE(request) {
 
     return NextResponse.json({ success: true, id }, { status: 200 });
   } catch (error) {
+    console.error("DELETE /api/expenses error:", error);
     return NextResponse.json(
       { error: "Unable to delete expense from the database." },
       { status: 500 }

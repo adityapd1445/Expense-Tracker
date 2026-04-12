@@ -2,19 +2,21 @@ import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 const options = {};
+const globalCache = globalThis.__mongoClientCache || {};
 
-if (!uri) {
-  throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
-}
-
-let clientPromise;
-
-function createClientPromise() {
-  if (!clientPromise) {
-    const client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+async function connectToDatabase() {
+  if (!uri) {
+    console.error("Missing MONGODB_URI environment variable.");
+    throw new Error("Please define MONGODB_URI in your environment.");
   }
-  return clientPromise;
+
+  if (!globalCache.clientPromise) {
+    const client = new MongoClient(uri, options);
+    globalCache.clientPromise = client.connect();
+  }
+
+  globalThis.__mongoClientCache = globalCache;
+  return globalCache.clientPromise;
 }
 
-export default createClientPromise;
+export default connectToDatabase;
